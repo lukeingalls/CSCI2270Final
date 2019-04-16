@@ -1,8 +1,8 @@
 #include <string>
 #include <vector>
 
-void array_double(float[]); //This can be like what we used earlier this year
-void array_double(std::string[]); //We likely will need this for all data types but at the very least these two
+void array_double(float[], int); //This can be like what we used earlier this year
+void array_double(std::string[], int); //We likely will need this for all data types but at the very least these two
 
 
 struct team {
