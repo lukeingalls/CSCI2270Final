@@ -23,16 +23,18 @@ struct player {
 	float spg;
 	float bpg;
 
+	std::vector<player**> rankings;
 	player(std::string, short int, float, float, float, float, float); //Define the constructor
+	player();
 };
 
 class maxheap {
 	public:
-		maxheap(int);
+		maxheap(int, char);
 		~maxheap();
-		void push(float);
-		float pop();
-		float peek();
+		void push(player);
+		player* pop();
+		player* peek();
 		bool full();
 		bool empty();
 	private:
@@ -42,15 +44,19 @@ class maxheap {
 		void repair_up(int);
 		void repair_down(int);
 
-		float* heap;
+		player* heap;
+		char type;
 		int currSize;
 		int maxSize;
 };
 
 class percentile_scoring {
 	private:
-		float stat_array[]; //This needs to be dynamically allocated so we can do array doubling as we push players to it.
-
+		player **ppg; //This needs to be dynamically allocated so we can do array doubling as we push players to it.
+		player **rpg;
+		player **apg;
+		player **spg;
+		player **bpg;
 	public:
 		float return_percentile(std::string); /*Look for a player and then return their rank
 		There's a couple issues we will end up needing to resolve here. Players with the same
