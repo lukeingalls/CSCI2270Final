@@ -57,14 +57,23 @@ class percentile_scoring {
 		player **apg;
 		player **spg;
 		player **bpg;
+		player **cumulative;
+
+		float weights[5];
+
+		int players;
+		int size; //Doesn't matter
+		std::std::vector<team> teams;
 	public:
 		float return_percentile(std::string); /*Look for a player and then return their rank
 		There's a couple issues we will end up needing to resolve here. Players with the same
 		name can be dealt with later. The other is that we can compute the percentile as (position in array)/(array length)
 		in general but when players have equal values we need to comput (first position of equal value)/(array length)*/
-		percentile_scoring(int); /*Not sure exactly what to do here but the int can refer which stat we want to organize
-		we will then have the program load all players into the heap and then pop them into the stat_array we probably need to 
-		make some way of keep track of all players to make this process easier.*/
+		percentile_scoring();
+		void compute_ranks(); //Call this to just get basic stats
+		void rank_top(); //Cumulative stats
+		void update_ranks(float, float, float, float, float);
+		void loadPlayer();
 };
 
 //http://www.espn.com/mens-college-basketball/team/stats/_/id/2006
