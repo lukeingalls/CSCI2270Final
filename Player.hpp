@@ -25,6 +25,7 @@ struct player {
 
 	std::vector<player**> rankings;
 	player(std::string, short int, float, float, float, float, float); //Define the constructor
+	player(std::string, float, float, float, float, float); //Define the constructor
 	player();
 };
 
@@ -68,6 +69,7 @@ class percentile_scoring {
 		std::vector<team> teams;
 	public:
 		percentile_scoring(); //Seems to work
+		~percentile_scoring(); //NEEDS OT BE DEFINED
 		void rank_top(); //Cumulative stats
 		/*So for top rank this will need to account for the ranks in all the other matrices and then weight them with float weights.
 		This shouldn't be a priority yet since it is more important to get the other stuff working first. We may need to define another
@@ -80,7 +82,7 @@ class percentile_scoring {
 		void sort_basic_arrays(); //Calls the heaps. Basically the midterm question. Untested (or at least not working)
 		void print_top_n_points(int); //Prints stuff. Defined.
 
-
+		void print_all_players();
 		void print_top_n_assists(int); //Undefined	oughta be suuuuuper easy
 		void print_top_n_rebounds(int); //Undefined	oughta be suuuuuper easy
 		void print_top_n_steals(int); //Undefined	oughta be suuuuuper easy
