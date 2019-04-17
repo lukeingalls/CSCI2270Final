@@ -3,13 +3,14 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
 
-int array_double(player **arr, int cap) {
+int array_double(player ***arr, int cap) {
 	int new_cap = 2*cap; //Define what the new size of the array should be
 	player **new_arr = new player*[new_cap]; //The new array
-	for (int i = 0; i < cap; i++) new_arr[i] = arr[i]; //Copy all elements of the arrays
-	delete [] arr;
-	arr = new_arr; //Move the array
+	for (int i = 0; i < cap; i++) new_arr[i] = (*arr)[i]; //Copy all elements of the arrays
+	delete [] (*arr);
+	*arr = new_arr; //Move the array
 	return new_cap; //Adjust the size of the array
 }
 
@@ -18,21 +19,23 @@ bool is_num(std::string s) {
 		return 1;
 }
 
-/*This is the exact same as before just using type std::string for the array*/
-// void array_double(std::string arr[], int cap) {
-// 	int new_cap = 2*cap; //Define what the new size of the array should be
-// 	std::string *new_arr = new std::string[new_cap]; //The new array
-// 	for (int i = 0; i < cap; i++) new_arr[i] = arr[i]; //Copy all elements of the arrays
-// 	delete [] arr;
-// 	arr = new_arr; //Move the array
-// 	cap = new_cap; //Adjust the size of the array
-// }
-
-void swap (player *x1, player *x2) { //Simple swap funciton for floats
-	player temp = *x1;
-	*x1 = *x2;
-	*x2 = temp;
-}
+/*
+Colorado Buffaloes
+Tyler Bey			13.6	9.9		0.6		0.8		1.2
+McKinley Wright IV	13.0	4.9		4.8		1.1		0.2
+Shane Gatling		 9.7	1.9		1.7		0.9		0.2
+D'Shawn Schwartz	 9.2	3.7		1.3		0.4		0.2
+Lucas Siewert		 8.9	5.0		1.6		0.4		0.3
+Evan Battey			 8.1	4.4		1.2		0.5		0.3
+Namon Wright		 7.0	2.9		0.9		0.4		0.2
+Daylen Kountz		 5.6	1.4		1.3		0.4		0.1
+Deleon Brown		 4.1	1.2		0.8		0.4		0.1
+Alexander Strating	 1.9	1.1		0.3		0.1		0.1
+Eli Parquet		 	 1.2	1.0		0.3		0.2		0.4
+AJ Martinka		 	 0.0	0.7		0.0		0.0		0.0
+Aidan McQuade		 0.0	0.2		0.0		0.0		0.0
+Benan Ersek		 	 0.0	0.2		0.0		0.0		0.0
+*/
 
 player::player(std::string name, short int pos, float ppg, float rpg, float apg, float spg, float bpg) : name(name), pos(pos), ppg(ppg), rpg(rpg), apg(apg), spg(spg), bpg(bpg) {
 
@@ -47,7 +50,7 @@ player::player() {}
 team::team (std::string name) : name(name) {}
 
 maxheap::maxheap(int heapSize, char type) {
-	heap = new player[heapSize];
+	heap = new player*[heapSize];
 	currSize = 0;
 	this->maxSize = heapSize;
 	if (type == 'a' || type == 'b' || type == 'p' || type == 's' || type == 'r') this->type = type;
@@ -57,7 +60,7 @@ maxheap::~maxheap() {
 	delete [] heap;
 }
 
-void maxheap::push(player value) {
+void maxheap::push(player *value) {
 	if (!full()) {
 		heap[currSize] = value;
 		repair_up(currSize++);
@@ -67,7 +70,7 @@ void maxheap::push(player value) {
 }
 
 player *maxheap::pop() {
-	player *temp = &heap[0];
+	player *temp = heap[0];
 	if (!empty()) {
 		heap[0] = heap[--currSize];
 		repair_down(0);
@@ -76,7 +79,7 @@ player *maxheap::pop() {
 }
 
 player *maxheap::peek() {
-	return &heap[0];
+	return heap[0];
 }
 
 bool maxheap::full() {
@@ -98,32 +101,32 @@ void maxheap::repair_up(int nodeIndex) { // Currently a max heap
 	int p = parent(nodeIndex);
 	switch(type) {
 		case 'a':
-			if (heap[nodeIndex].apg > heap[p].apg) {
-				swap(&heap[nodeIndex], &heap[p]);
+			if (heap[nodeIndex]->apg > heap[p]->apg) {
+				std::swap(heap[nodeIndex], heap[p]);
 				repair_up(p);
 			}
 			break;
 		case 'b':
-			if (heap[nodeIndex].bpg > heap[p].bpg) {
-				swap(&heap[nodeIndex], &heap[p]);
+			if (heap[nodeIndex]->bpg > heap[p]->bpg) {
+				std::swap(heap[nodeIndex], heap[p]);
 				repair_up(p);
 			}
 			break;
 		case 'p':
-			if (heap[nodeIndex].ppg > heap[p].ppg) {
-				swap(&heap[nodeIndex], &heap[p]);
+			if (heap[nodeIndex]->ppg > heap[p]->ppg) {
+				std::swap(heap[nodeIndex], heap[p]);
 				repair_up(p);
 			}
 			break;
 		case 'r':
-			if (heap[nodeIndex].rpg > heap[p].rpg) {
-				swap(&heap[nodeIndex], &heap[p]);
+			if (heap[nodeIndex]->rpg > heap[p]->rpg) {
+				std::swap(heap[nodeIndex], heap[p]);
 				repair_up(p);
 			}
 			break;
 		case 's':
-			if (heap[nodeIndex].spg > heap[p].spg) {
-				swap(&heap[nodeIndex], &heap[p]);
+			if (heap[nodeIndex]->spg > heap[p]->spg) {
+				std::swap(heap[nodeIndex], heap[p]);
 				repair_up(p);
 			}
 			break;
@@ -140,11 +143,11 @@ void maxheap::repair_down(int nodeIndex) {
 	switch(type) {
 		case 'a':
 			if (l < currSize) {
-				if (heap[l].apg > heap[nodeIndex].apg) {
+				if (heap[l]->apg > heap[nodeIndex]->apg) {
 					compar = l;
 				}
 				if (r < currSize) {
-					if (heap[r].apg > heap[compar].apg) {
+					if (heap[r]->apg > heap[compar]->apg) {
 						compar = r;
 					}
 				}
@@ -152,11 +155,11 @@ void maxheap::repair_down(int nodeIndex) {
 			break;
 		case 'b':
 			if (l < currSize) {
-				if (heap[l].bpg > heap[nodeIndex].bpg) {
+				if (heap[l]->bpg > heap[nodeIndex]->bpg) {
 					compar = l;
 				}
 				if (r < currSize) {
-					if (heap[r].bpg > heap[compar].bpg) {
+					if (heap[r]->bpg > heap[compar]->bpg) {
 						compar = r;
 					}
 				}
@@ -164,11 +167,11 @@ void maxheap::repair_down(int nodeIndex) {
 			break;
 		case 'p':
 			if (l < currSize) {
-				if (heap[l].ppg > heap[nodeIndex].ppg) {
+				if (heap[l]->ppg > heap[nodeIndex]->ppg) {
 					compar = l;
 				}
 				if (r < currSize) {
-					if (heap[r].ppg > heap[compar].ppg) {
+					if (heap[r]->ppg > heap[compar]->ppg) {
 						compar = r;
 					}
 				}
@@ -176,11 +179,11 @@ void maxheap::repair_down(int nodeIndex) {
 			break;
 		case 'r':
 			if (l < currSize) {
-				if (heap[l].rpg > heap[nodeIndex].rpg) {
+				if (heap[l]->rpg > heap[nodeIndex]->rpg) {
 					compar = l;
 				}
 				if (r < currSize) {
-					if (heap[r].rpg > heap[compar].rpg) {
+					if (heap[r]->rpg > heap[compar]->rpg) {
 						compar = r;
 					}
 				}
@@ -188,11 +191,11 @@ void maxheap::repair_down(int nodeIndex) {
 			break;
 		case 's':
 			if (l < currSize) {
-				if (heap[l].spg > heap[nodeIndex].spg) {
+				if (heap[l]->spg > heap[nodeIndex]->spg) {
 					compar = l;
 				}
 				if (r < currSize) {
-					if (heap[r].spg > heap[compar].spg) {
+					if (heap[r]->spg > heap[compar]->spg) {
 						compar = r;
 					}
 				}
@@ -200,7 +203,7 @@ void maxheap::repair_down(int nodeIndex) {
 			break;
 	}
 	if (compar != nodeIndex) {
-		swap(&heap[compar], &heap[nodeIndex]);
+		std::swap(heap[compar], heap[nodeIndex]);
 		repair_down(compar);
 	}
 }
@@ -325,6 +328,7 @@ void percentile_scoring::readinfile(std::string file) {
 		getline(roster, teamname);
 		team *t = teamexists(teamname);
 		if (!t) {
+			//Teamname
 			teams.push_back(teamname);
 			t = &teams[teams.size() - 1];
 		}
@@ -338,23 +342,23 @@ void percentile_scoring::readinfile(std::string file) {
 			t->roster.push_back(p);
 		}
 	}
+
 }
 
 void percentile_scoring::check_arrays() {
 	while(size < players) {
-		std::cout << "Doubling array sizes..." << std::endl;
-		array_double(ppg, size);
-		array_double(rpg, size);
-		array_double(apg, size);
-		array_double(bpg, size);
-		array_double(spg, size);
-		size = array_double(cumulative, size);
-		std::cout << "...Arrays now size: " << size <<std::endl;
+		array_double(&ppg, size);
+		array_double(&rpg, size);
+		array_double(&apg, size);
+		array_double(&bpg, size);
+		array_double(&spg, size);
+		size = array_double(&cumulative, size);
 	}
 }
 
 void percentile_scoring::sort_basic_arrays() {
 	check_arrays();
+
 	maxheap points(players, 'p');
 	maxheap rebounds(players, 'r');
 	maxheap assists(players, 'a');
@@ -362,13 +366,14 @@ void percentile_scoring::sort_basic_arrays() {
 	maxheap blocks(players, 'b');
 	for (int j = 0; j < teams.size(); j++) {
 		for (int i = 0; i < teams[j].roster.size(); i++) {
-			points.push(teams[j].roster[i]);
-			rebounds.push(teams[j].roster[i]);
-			assists.push(teams[j].roster[i]);
-			steals.push(teams[j].roster[i]);
-			blocks.push(teams[j].roster[i]);
+			points.push(&teams[j].roster[i]);
+			rebounds.push(&teams[j].roster[i]);
+			assists.push(&teams[j].roster[i]);
+			steals.push(&teams[j].roster[i]);
+			blocks.push(&teams[j].roster[i]);
 		}
 	}
+
 	for (int i = 0; i < players; i++) {
 		ppg[i] = points.pop();
 		rpg[i] = rebounds.pop();
@@ -379,23 +384,28 @@ void percentile_scoring::sort_basic_arrays() {
 }
 
 void percentile_scoring::print_top_n_points(int n) {
-	for (int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << ppg[i]->name << ppg[i]->ppg << std::endl; 
+	std::cout << "Here are the " << n << " best scorers: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << ppg[i]->name << ppg[i]->ppg << std::endl; 
 }
 
 void percentile_scoring::print_top_n_assists(int n) {
-  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << apg[i]->name << apg[i]->apg << std::endl;
+	std::cout << "Here are the " << n << " best assisters: " << std::endl;
+	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << apg[i]->name << apg[i]->apg << std::endl;
 }
 
 void percentile_scoring::print_top_n_rebounds(int n) {
-  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << rpg[i]->name << rpg[i]->rpg << std::endl;
+	std::cout << "Here are the " << n << " best rebounders: " << std::endl;
+	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << rpg[i]->name << rpg[i]->rpg << std::endl;
 }
 
 void percentile_scoring::print_top_n_steals(int n) {
-  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << spg[i]->name << spg[i]->spg << std::endl;
+	std::cout << "Here are the " << n << " best sttealers: " << std::endl;
+	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << spg[i]->name << spg[i]->spg << std::endl;
 }
 
 void percentile_scoring::print_top_n_blocks(int n) {
-  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << bpg[i]->name << bpg[i]->bpg << std::endl;
+	std::cout << "Here are the " << n << " best shot blockers: " << std::endl;
+	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << bpg[i]->name << bpg[i]->bpg << std::endl;
 }
 
 void percentile_scoring::print_all_players() {
@@ -407,10 +417,10 @@ void percentile_scoring::print_all_players() {
 }
 
 percentile_scoring::~percentile_scoring() {
-	// delete [] ppg;
-	// delete [] rpg;
-	// delete [] apg;
-	// delete [] spg;
-	// delete [] bpg;
-	// delete [] cumulative;
+	delete [] ppg;
+	delete [] rpg;
+	delete [] apg;
+	delete [] spg;
+	delete [] bpg;
+	delete [] cumulative;
 }
