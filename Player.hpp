@@ -28,6 +28,8 @@ struct player {
 	player();
 };
 
+
+//Might have logic errors
 class maxheap {
 	public:
 		maxheap(int, char);
@@ -63,17 +65,26 @@ class percentile_scoring {
 
 		int players;
 		int size; //Doesn't matter
-		std::std::vector<team> teams;
+		std::vector<team> teams;
 	public:
-		float return_percentile(std::string); /*Look for a player and then return their rank
-		There's a couple issues we will end up needing to resolve here. Players with the same
-		name can be dealt with later. The other is that we can compute the percentile as (position in array)/(array length)
-		in general but when players have equal values we need to comput (first position of equal value)/(array length)*/
-		percentile_scoring();
-		void compute_ranks(); //Call this to just get basic stats
+		percentile_scoring(); //Seems to work
 		void rank_top(); //Cumulative stats
-		void update_ranks(float, float, float, float, float);
-		void loadPlayer();
+		/*So for top rank this will need to account for the ranks in all the other matrices and then weight them with float weights.
+		This shouldn't be a priority yet since it is more important to get the other stuff working first. We may need to define another
+		heap class to get this done. Do whatever though*/
+		void update_ranks(float, float, float, float, float); //Still needs to be defined. Just updated the weights.
+		void loadPlayer(); //Done. Untested.
+		team *teamexists(std::string); //Done. Untested. Sees whether a team appears in the teams vector.
+		void readinfile(std::string);
+		void check_arrays(); //Calls array doubling until everythings chilling. Should work. Untested.
+		void sort_basic_arrays(); //Calls the heaps. Basically the midterm question. Untested (or at least not working)
+		void print_top_n_points(int); //Prints stuff. Defined.
+
+
+		void print_top_n_assists(int); //Undefined	oughta be suuuuuper easy
+		void print_top_n_rebounds(int); //Undefined	oughta be suuuuuper easy
+		void print_top_n_steals(int); //Undefined	oughta be suuuuuper easy
+		void print_top_n_blocks(int); //Undefined	oughta be suuuuuper easy
 };
 
 //http://www.espn.com/mens-college-basketball/team/stats/_/id/2006
