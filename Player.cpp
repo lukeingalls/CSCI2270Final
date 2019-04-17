@@ -376,3 +376,19 @@ void percentile_scoring::sort_basic_arrays() {
 void percentile_scoring::print_top_n_points(int n) {
 	for (int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << ppg[i]->name << ppg[i]->ppg << std::endl; 
 }
+
+void percentile_scoring::print_top_n_assists(int n) {
+  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << apg[i]->name << apg[i]->apg << std::endl;
+}
+
+void percentile_scoring::print_top_n_rebounds(int n) {
+  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << rpg[i]->name << rpg[i]->rpg << std::endl;
+}
+
+void percentile_scoring::print_top_n_steals(int n) {
+  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << spg[i]->name << spg[i]->spg << std::endl;
+}
+
+void percentile_scoring::print_top_n_blocks(int n) {
+  for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << bpg[i]->name << bpg[i]->bpg << std::endl;
+}
