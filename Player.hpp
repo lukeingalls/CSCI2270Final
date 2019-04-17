@@ -35,7 +35,7 @@ class maxheap {
 	public:
 		maxheap(int, char);
 		~maxheap();
-		void push(player);
+		void push(player*);
 		player* pop();
 		player* peek();
 		bool full();
@@ -47,7 +47,7 @@ class maxheap {
 		void repair_up(int);
 		void repair_down(int);
 
-		player* heap;
+		player** heap;
 		char type;
 		int currSize;
 		int maxSize;
@@ -69,7 +69,7 @@ class percentile_scoring {
 		std::vector<team> teams;
 	public:
 		percentile_scoring(); //Seems to work
-		~percentile_scoring(); //NEEDS OT BE DEFINED
+		~percentile_scoring(); 
 		void rank_top(); //Cumulative stats
 		/*So for top rank this will need to account for the ranks in all the other matrices and then weight them with float weights.
 		This shouldn't be a priority yet since it is more important to get the other stuff working first. We may need to define another
@@ -81,12 +81,11 @@ class percentile_scoring {
 		void check_arrays(); //Calls array doubling until everythings chilling. Should work. Untested.
 		void sort_basic_arrays(); //Calls the heaps. Basically the midterm question. Untested (or at least not working)
 		void print_top_n_points(int); //Prints stuff. Defined.
-
 		void print_all_players();
-		void print_top_n_assists(int); //Undefined	oughta be suuuuuper easy
-		void print_top_n_rebounds(int); //Undefined	oughta be suuuuuper easy
-		void print_top_n_steals(int); //Undefined	oughta be suuuuuper easy
-		void print_top_n_blocks(int); //Undefined	oughta be suuuuuper easy
+		void print_top_n_assists(int);
+		void print_top_n_rebounds(int);
+		void print_top_n_steals(int);
+		void print_top_n_blocks(int);
 };
 
 //http://www.espn.com/mens-college-basketball/team/stats/_/id/2006
