@@ -331,6 +331,7 @@ void percentile_scoring::readinfile(std::string file) {
 				teamname.erase(0, teamname.find(",") + 1);
 			}
 			players++;
+			if(roster.eof()) break;
 			player p(stats[0], stoi(stats[1]), stof(stats[2]), stof(stats[3]), stof(stats[4]), stof(stats[5]), stof(stats[6]));
 			t->roster.push_back(p);
 		}
