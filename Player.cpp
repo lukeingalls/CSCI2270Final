@@ -38,6 +38,10 @@ player::player(std::string name, short int pos, float ppg, float rpg, float apg,
 
 }
 
+player::player(std::string name, float ppg, float rpg, float apg, float spg, float bpg) : name(name), ppg(ppg), rpg(rpg), apg(apg), spg(spg), bpg(bpg) {
+
+}
+
 player::player() {}
 
 team::team (std::string name) : name(name) {}
@@ -316,7 +320,7 @@ void percentile_scoring::loadPlayer() {
 void percentile_scoring::readinfile(std::string file) {
 	std::ifstream roster;
 	roster.open(file);
-	std::string teamname, stats[7];
+	std::string teamname, stats[6];
 	if (roster.is_open()) {
 		getline(roster, teamname);
 		team *t = teamexists(teamname);
@@ -324,15 +328,13 @@ void percentile_scoring::readinfile(std::string file) {
 			teams.push_back(teamname);
 			t = &teams[teams.size() - 1];
 		}
-		while (!roster.eof()) {
-			getline(roster, teamname);
-			for (int i = 0; i < 7; i++) {
+		while (getline(roster, teamname)) {
+			for (int i = 0; i < 6; i++) {
 				stats[i] = teamname.substr(0, teamname.find(","));
 				teamname.erase(0, teamname.find(",") + 1);
 			}
-			if(roster.eof()) break;
 			players++;
-			player p(stats[0], stoi(stats[1]), stof(stats[2]), stof(stats[3]), stof(stats[4]), stof(stats[5]), stof(stats[6]));
+			player p(stats[0], stof(stats[1]), stof(stats[2]), stof(stats[3]), stof(stats[4]), stof(stats[5]));
 			t->roster.push_back(p);
 		}
 	}
@@ -340,12 +342,14 @@ void percentile_scoring::readinfile(std::string file) {
 
 void percentile_scoring::check_arrays() {
 	while(size < players) {
+		std::cout << "Doubling array sizes..." << std::endl;
 		array_double(ppg, size);
 		array_double(rpg, size);
 		array_double(apg, size);
 		array_double(bpg, size);
 		array_double(spg, size);
 		size = array_double(cumulative, size);
+		std::cout << "...Arrays now size: " << size <<std::endl;
 	}
 }
 
@@ -392,4 +396,21 @@ void percentile_scoring::print_top_n_steals(int n) {
 
 void percentile_scoring::print_top_n_blocks(int n) {
   for(int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << bpg[i]->name << bpg[i]->bpg << std::endl;
+}
+
+void percentile_scoring::print_all_players() {
+	for (int j = 0; j < teams.size(); j++) {
+		for (int i = 0; i < teams[j].roster.size(); i++) {
+			std::cout << i + 1 << ": " << std::left << std::setw(30) << teams[j].roster[i].name << teams[j].roster[i].ppg << std::endl;
+		}
+	}
+}
+
+percentile_scoring::~percentile_scoring() {
+	// delete [] ppg;
+	// delete [] rpg;
+	// delete [] apg;
+	// delete [] spg;
+	// delete [] bpg;
+	// delete [] cumulative;
 }
