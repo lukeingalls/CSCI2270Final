@@ -1,18 +1,20 @@
 #include "Player.hpp"
 #include <climits>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 
-void array_double(player arr[], int &cap) {
+int array_double(player **arr, int cap) {
 	int new_cap = 2*cap; //Define what the new size of the array should be
-	player *new_arr = new player[new_cap]; //The new array
+	player **new_arr = new player*[new_cap]; //The new array
 	for (int i = 0; i < cap; i++) new_arr[i] = arr[i]; //Copy all elements of the arrays
 	delete [] arr;
 	arr = new_arr; //Move the array
-	cap = new_cap; //Adjust the size of the array
+	return new_cap; //Adjust the size of the array
 }
 
 bool is_num(std::string s) {
-	for (int i = 0; i < s.length(); i++) if (i != '1' && i != '2' i != '3' && i != '4' && i != '5' i != '6' && i != '7' && i != '8' i != '9' && i != '0' && i != '.') return 0;
+	for (std::string::iterator i = s.begin(); i != s.end(); i++) if (*i != '1' && *i != '2' && *i != '3' && *i != '4' && *i != '5' && *i != '6' && *i != '7' && *i != '8' && *i != '9' && *i != '0' && *i != '.') return 0;
 		return 1;
 }
 
@@ -56,8 +58,7 @@ void maxheap::push(player value) {
 		heap[currSize] = value;
 		repair_up(currSize++);
 	} else {
-		array_double(heap, maxSize);
-		push(value);
+		std::cout << "Heap full: Big Problem" << std::endl;
 	}
 }
 
@@ -224,7 +225,12 @@ percentile_scoring::percentile_scoring() {
 	players = 0;
 }
 
-percentile_scoring::loadPlayer() {
+team *percentile_scoring::teamexists(std::string t) {
+	for (int i = 0; i < teams.size(); i++) if (teams[i].name == t) return &teams[i];
+	return 0;
+}
+
+void percentile_scoring::loadPlayer() {
 	std::string inputs[8];
 	team *t;
 	while (1) {
@@ -297,11 +303,76 @@ percentile_scoring::loadPlayer() {
 		std::cout << "POS? ";
 		getline(std::cin, inputs[7]);
 		std::cout << std::endl;
-		if (inputs[7] == '1' || inputs[7] == '2' || inputs[7] == '3' || inputs[7] == '4' || inputs[7] == '5')
+		if (inputs[7][0] == '1' || inputs[7][0] == '2' || inputs[7][0] == '3' || inputs[7][0] == '4' || inputs[7][0] == '5')
 			break;
 		else
 			std::cout << "Input an int..." << std::endl;
 	}
 	player p(inputs[1], stoi(inputs[7]), stof(inputs[2]), stof(inputs[3]), stof(inputs[4]), stof(inputs[5]), stof(inputs[6]));
 	t->roster.push_back(p);
+	players++;
+}
+
+void percentile_scoring::readinfile(std::string file) {
+	std::ifstream roster;
+	roster.open(file);
+	std::string teamname, stats[7];
+	if (roster.is_open()) {
+		getline(roster, teamname);
+		team *t = teamexists(teamname);
+		if (!t) {
+			teams.push_back(teamname);
+			t = &teams[teams.size() - 1];
+		}
+		while (!roster.eof()) {
+			getline(roster, teamname);
+			for (int i = 0; i < 7; i++) {
+				stats[i] = teamname.substr(0, teamname.find(","));
+				teamname.erase(0, teamname.find(",") + 1);
+			}
+			players++;
+			player p(stats[0], stoi(stats[1]), stof(stats[2]), stof(stats[3]), stof(stats[4]), stof(stats[5]), stof(stats[6]));
+			t->roster.push_back(p);
+		}
+	}
+}
+
+void percentile_scoring::check_arrays() {
+	while(size < players) {
+		array_double(ppg, size);
+		array_double(rpg, size);
+		array_double(apg, size);
+		array_double(bpg, size);
+		array_double(spg, size);
+		size = array_double(cumulative, size);
+	}
+}
+
+void percentile_scoring::sort_basic_arrays() {
+	check_arrays();
+	maxheap points(players, 'p');
+	maxheap rebounds(players, 'r');
+	maxheap assists(players, 'a');
+	maxheap steals(players, 's');
+	maxheap blocks(players, 'b');
+	for (int j = 0; j < teams.size(); j++) {
+		for (int i = 0; i < teams[j].roster.size(); i++) {
+			points.push(teams[j].roster[i]);
+			rebounds.push(teams[j].roster[i]);
+			assists.push(teams[j].roster[i]);
+			steals.push(teams[j].roster[i]);
+			blocks.push(teams[j].roster[i]);
+		}
+	}
+	for (int i = 0; i < players; i++) {
+		ppg[i] = points.pop();
+		rpg[i] = rebounds.pop();
+		apg[i] = assists.pop();
+		bpg[i] = blocks.pop();
+		spg[i] = steals.pop();
+	}
+}
+
+void percentile_scoring::print_top_n_points(int n) {
+	for (int i = 0; i < n; i++) std::cout << i + 1 << ": " << std::left << std::setw(30) << ppg[i]->name << ppg[i]->ppg << std::endl; 
 }
