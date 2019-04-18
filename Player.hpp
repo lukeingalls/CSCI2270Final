@@ -23,6 +23,11 @@ struct player {
 	float spg;
 	float bpg;
 
+	float ppg_percentile;
+	float rpg_percentile;
+	float apg_percentile;
+	float spg_percentile;
+	float bpg_percentile;
 	std::vector<player**> rankings;
 	player(std::string, short int, float, float, float, float, float); //Define the constructor
 	player(std::string, float, float, float, float, float); //Define the constructor
@@ -64,9 +69,16 @@ class percentile_scoring {
 
 		float weights[5];
 
+		bool run;
 		int players;
 		int size; //Doesn't matter
 		std::vector<team> teams;
+		team *teamexists(std::string);
+		void check_arrays(); //Calls array doubling until everythings chilling. Should work. Untested.
+		void sort_basic_arrays(); //Calls the heaps. Basically the midterm question. Untested (or at least not working)
+		bool empty();
+		void percentile_score_players();
+		int find_ith_equivalent(player **, int, char);
 	public:
 		percentile_scoring(); //Seems to work
 		~percentile_scoring(); 
@@ -76,10 +88,7 @@ class percentile_scoring {
 		heap class to get this done. Do whatever though*/
 		void update_ranks(float, float, float, float, float); //Still needs to be defined. Just updated the weights.
 		void loadPlayer(); //Done. Untested.
-		team *teamexists(std::string); //Done. Untested. Sees whether a team appears in the teams vector.
 		void readinfile(std::string);
-		void check_arrays(); //Calls array doubling until everythings chilling. Should work. Untested.
-		void sort_basic_arrays(); //Calls the heaps. Basically the midterm question. Untested (or at least not working)
 		void print_top_n_points(int); //Prints stuff. Defined.
 		void print_all_players();
 		void print_top_n_assists(int);
