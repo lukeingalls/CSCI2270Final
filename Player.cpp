@@ -19,30 +19,20 @@ bool is_num(std::string s) {
 		return 1;
 }
 
-/*
-Colorado Buffaloes
-Tyler Bey			13.6	9.9		0.6		0.8		1.2
-McKinley Wright IV	13.0	4.9		4.8		1.1		0.2
-Shane Gatling		 9.7	1.9		1.7		0.9		0.2
-D'Shawn Schwartz	 9.2	3.7		1.3		0.4		0.2
-Lucas Siewert		 8.9	5.0		1.6		0.4		0.3
-Evan Battey			 8.1	4.4		1.2		0.5		0.3
-Namon Wright		 7.0	2.9		0.9		0.4		0.2
-Daylen Kountz		 5.6	1.4		1.3		0.4		0.1
-Deleon Brown		 4.1	1.2		0.8		0.4		0.1
-Alexander Strating	 1.9	1.1		0.3		0.1		0.1
-Eli Parquet		 	 1.2	1.0		0.3		0.2		0.4
-AJ Martinka		 	 0.0	0.7		0.0		0.0		0.0
-Aidan McQuade		 0.0	0.2		0.0		0.0		0.0
-Benan Ersek		 	 0.0	0.2		0.0		0.0		0.0
-*/
-
 player::player(std::string name, short int pos, float ppg, float rpg, float apg, float spg, float bpg) : name(name), pos(pos), ppg(ppg), rpg(rpg), apg(apg), spg(spg), bpg(bpg) {
-
+	ppg_percentile = 0;
+	rpg_percentile = 0;
+	apg_percentile = 0;
+	spg_percentile = 0;
+	bpg_percentile = 0;
 }
 
 player::player(std::string name, float ppg, float rpg, float apg, float spg, float bpg) : name(name), ppg(ppg), rpg(rpg), apg(apg), spg(spg), bpg(bpg) {
-
+	ppg_percentile = 0;
+	rpg_percentile = 0;
+	apg_percentile = 0;
+	spg_percentile = 0;
+	bpg_percentile = 0;
 }
 
 player::player() {}
@@ -68,7 +58,6 @@ void maxheap::push(player *value) {
 		std::cout << "Heap full: Big Problem" << std::endl;
 	}
 }
-
 player *maxheap::pop() {
 	player *temp = heap[0];
 	if (!empty()) {
@@ -77,7 +66,6 @@ player *maxheap::pop() {
 	} else std::cout << "There's literally nothing to remove" << std::endl;
 	return temp;
 }
-
 player *maxheap::peek() {
 	return heap[0];
 }
@@ -86,16 +74,13 @@ bool maxheap::full() {
 	if (currSize == maxSize) return 1;
 	return 0;
 }
-
 bool maxheap::empty() {
 	if (currSize == 0) return 1;
 	return 0;
 }
-
 int maxheap::parent(int nodeIndex) {return (nodeIndex-1)/2;}
 int maxheap::left(int nodeIndex){return (2*nodeIndex + 1);}
 int maxheap::right(int nodeIndex){return (2*nodeIndex + 2);}
-
 void maxheap::repair_up(int nodeIndex) { // Currently a max heap
 	if (nodeIndex == 0) return;
 	int p = parent(nodeIndex);
@@ -135,7 +120,6 @@ void maxheap::repair_up(int nodeIndex) { // Currently a max heap
 			break;
 	}
 }
-
 void maxheap::repair_down(int nodeIndex) {
 	int l = left(nodeIndex);
 	int r = right(nodeIndex);
@@ -216,6 +200,108 @@ void maxheap::repair_down(int nodeIndex) {
 //
 //
 
+/*
+Colorado Buffaloes
+Tyler Bey			13.6	9.9		0.6		0.8		1.2
+McKinley Wright IV	13.0	4.9		4.8		1.1		0.2
+Shane Gatling		 9.7	1.9		1.7		0.9		0.2
+D'Shawn Schwartz	 9.2	3.7		1.3		0.4		0.2
+Lucas Siewert		 8.9	5.0		1.6		0.4		0.3
+Evan Battey			 8.1	4.4		1.2		0.5		0.3
+Namon Wright		 7.0	2.9		0.9		0.4		0.2
+Daylen Kountz		 5.6	1.4		1.3		0.4		0.1
+Deleon Brown		 4.1	1.2		0.8		0.4		0.1
+Alexander Strating	 1.9	1.1		0.3		0.1		0.1
+Eli Parquet			 1.2	1.0		0.3		0.2		0.4
+AJ Martinka			 0.0	0.7		0.0		0.0		0.0
+Aidan McQuade		 0.0	0.2		0.0		0.0		0.0
+Benan Ersek			 0.0	0.2		0.0		0.0		0.0
+*/
+
+int percentile_scoring::find_ith_equivalent(player **p, int remaining, char val) {
+	switch(val) {
+		case 'p': {
+				float start_val = (*p)->ppg;
+				for (int i = 0; i < remaining; i++) if ((*p + i)->ppg < start_val) return i;
+			}
+			break;
+		case 'r': {
+				float start_val = (*p)->rpg;
+				for (int i = 0; i < remaining; i++) if ((*p + i)->rpg < start_val) return i;
+			}
+			break;
+		case 'a': {
+				float start_val = (*p)->apg;
+				for (int i = 0; i < remaining; i++) if ((*p + i)->apg < start_val) return i;
+			}
+			break;
+		case 'b': {
+				float start_val = (*p)->bpg;
+				for (int i = 0; i < remaining; i++) if ((*p + i)->bpg < start_val) return i;
+			}
+			break;
+		case 's': {
+				float start_val = (*p)->spg;
+				for (int i = 0; i < remaining; i++) if ((*p + i)->spg < start_val) return i;
+			}
+			break;
+	}
+	return remaining;
+}
+
+void percentile_scoring::percentile_score_players() {
+	if (!run) sort_basic_arrays();
+	for (int i = 0; i < players - 1; i++) {
+		if (ppg[i]->ppg > ppg[i + 1]->ppg) {
+			ppg[i]->ppg_percentile = (float)(players - (i + 1))/(float)players;
+		} else {
+			int j = find_ith_equivalent(ppg + i, (players - 1) - i, 'p');
+			for (int k  = 0; k < j; k++) ppg[i + k]->ppg_percentile = (float)(players - (i + j + 1))/(float)players;
+			i+=j;
+		}
+	}
+	for (int i = 0; i < players - 1; i++) {
+		if (rpg[i]->rpg > rpg[i + 1]->rpg) {
+			rpg[i]->rpg_percentile = (float)(players - (i + 1))/(float)players;
+		} else {
+			int j = find_ith_equivalent(rpg + i, (players - 1) - i, 'r');
+			for (int k  = 0; k < j; k++) rpg[i + k]->rpg_percentile = (float)(players - (i + j + 1))/(float)players;
+			i+=j;
+		}
+	}
+	for (int i = 0; i < players - 1; i++) {
+		if (apg[i]->apg > apg[i + 1]->apg) {
+			apg[i]->apg_percentile = (float)(players - (i + 1))/(float)players;
+		} else {
+			int j = find_ith_equivalent(apg + i, (players - 1) - i, 'a');
+			for (int k  = 0; k < j; k++) apg[i + k]->apg_percentile = (float)(players - (i + j + 1))/(float)players;
+			i+=j;
+		}
+	}
+	for (int i = 0; i < players - 1; i++) {
+		if (spg[i]->spg > spg[i + 1]->spg) {
+			spg[i]->spg_percentile = (float)(players - (i + 1))/(float)players;
+		} else {
+			int j = find_ith_equivalent(spg + i, (players - 1) - i, 's');
+			for (int k  = 0; k < j; k++) spg[i + k]->spg_percentile = (float)(players - (i + j + 1))/(float)players;
+			i+=j;
+		}
+	}
+	for (int i = 0; i < players - 1; i++) {
+		if (bpg[i]->bpg > bpg[i + 1]->bpg) {
+			bpg[i]->bpg_percentile = (float)(players - (i + 1))/(float)players;
+		} else {
+			int j = find_ith_equivalent(bpg + i, (players - 1) - i, 'b');
+			for (int k  = 0; k < j; k++) bpg[i + k]->bpg_percentile = (float)(players - (i + j + 1))/(float)players;
+			i+=j;
+		}
+	}
+}
+
+void percentile_scoring::rank_top() {
+	percentile_score_players();
+}
+
 percentile_scoring::percentile_scoring() {
 	size = 10;
 	ppg = new player*[size]; 
@@ -224,7 +310,7 @@ percentile_scoring::percentile_scoring() {
 	spg = new player*[size];
 	bpg = new player*[size];
 	cumulative = new player*[size];
-
+	run = 0;
 	for (int i = 0; i < sizeof(weights)/sizeof(weights[0]); i++) {
 		weights[i] = 1;
 	} 
@@ -318,6 +404,7 @@ void percentile_scoring::loadPlayer() {
 	player p(inputs[1], stoi(inputs[7]), stof(inputs[2]), stof(inputs[3]), stof(inputs[4]), stof(inputs[5]), stof(inputs[6]));
 	t->roster.push_back(p);
 	players++;
+	run = 0;
 }
 
 void percentile_scoring::readinfile(std::string file) {
@@ -342,7 +429,8 @@ void percentile_scoring::readinfile(std::string file) {
 			t->roster.push_back(p);
 		}
 	}
-
+	roster.close();
+	run = 0;
 }
 
 void percentile_scoring::check_arrays() {
@@ -357,8 +445,9 @@ void percentile_scoring::check_arrays() {
 }
 
 void percentile_scoring::sort_basic_arrays() {
-	check_arrays();
 
+	check_arrays();
+	run = 1;
 	maxheap points(players, 'p');
 	maxheap rebounds(players, 'r');
 	maxheap assists(players, 'a');
@@ -414,6 +503,10 @@ void percentile_scoring::print_all_players() {
 			std::cout << i + 1 << ": " << std::left << std::setw(30) << teams[j].roster[i].name << teams[j].roster[i].ppg << std::endl;
 		}
 	}
+}
+
+bool percentile_scoring::empty() {
+	return !players;
 }
 
 percentile_scoring::~percentile_scoring() {
