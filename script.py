@@ -1,3 +1,5 @@
+#https://medium.com/incedge/web-scraping-bf2d814cc572
+
 import numpy as np
 import requests
 from scipy import stats
