@@ -8,18 +8,19 @@ from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 
 urls = []
-for i in range(304,316):
-    url = 'https://www.teamrankings.com/ncaa-basketball/player-stat/points?season_id='+str(i)
-    response = requests.get(url)
-    # print(response) #successful
-    soup = BeautifulSoup(response.text, 'html.parser')
-    table = soup.find('table')
-
-    rows = table.findAll('tr')
-    rows = rows[1:]
-    for row in rows:
-        x = row.find('a', href=True)['href']
-        urls.append('https://www.teamrankings.com'+x)
+stats = ["points", "assists", "rebounds", "steals", "turnovers", "blocks"]
+for j in stats:
+    for i in range(304,316):
+        url = 'https://www.teamrankings.com/ncaa-basketball/player-stat/'+j+'?season_id='+str(i)
+        response = requests.get(url)
+        # print(response) #successful
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table')
+        rows = table.findAll('tr')
+        rows = rows[1:]
+        for row in rows:
+            x = row.find('a', href=True)['href']
+            urls.append('https://www.teamrankings.com'+x)
 print(len(urls))
 
 all = [[],[]]
