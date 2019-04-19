@@ -27,38 +27,24 @@ for j in stats:
 
 print('Done! time elapsed: ' + str(time.time()-start) + ' Read in ' + str(len(urls)) + ' links')
 
-all = [[],[]]
+player_file = open("revised_players.txt", "w")
 start = time.time()
 for i in range(len(urls)):
-    player = []
     url = urls[i]
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     name = soup.find(id = 'h1-title')
     name1 = name.get_text()
-    if (name1 == 'NCAA Players'):
-        del urls[i]
-    else:
+    if (name1 != 'NCAA Players'):
+        player_file.write(str(name1) + "\n")
         bio = soup.find(class_ = 'h1-sub')
         bio1 = bio.get_text()#.strip()
+        player_file.write(str(bio1) + "\n")
         table = soup.find('tbody')
         table1 = table.findAll('td')
         table2 = []
         for x in table1:
-            table2.append(x.get_text().strip())  
-        player.append(name1)
-        player.append(bio1)
-        player.append(table2)
-        all.append(player)
-    if (i//100 == i/100):
-        x = time.time() - start
-        y = (len(urls)/(i + 1))*(x)
-        print ('Running... time elapsed: ' + str(x) + '   Estimated time remaining: ' + str(y))
-
-        
-output = open("players.txt", 'w')
-
-for i in range len(all):
-    for j in range len(all[i]):
-        ouput.write(all[i][j] + "\n")
-    output.write("---------------------------------------")
+            player_file.write(str(x.get_text().strip()) + ",")
+        player_file.write("\n ------------------ \n")
+    x = time.time() - start
+    print ('Running... time elapsed: ' + str(x) + '   Percent Complete: ' + str(i*100/len(urls)))
