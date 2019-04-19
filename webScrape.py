@@ -29,7 +29,7 @@ print('Done! time elapsed: ' + str(time.time()-start) + ' Read in ' + str(len(ur
 
 all = [[],[]]
 start = time.time()
-for i in range(700,len(urls)):
+for i in range(len(urls)):
     player = []
     url = urls[i]
     response = requests.get(url)
@@ -52,5 +52,13 @@ for i in range(700,len(urls)):
         all.append(player)
     if (i//100 == i/100):
         x = time.time() - start
-        y = (len(urls)/(i + 1))*(x+1)
+        y = (len(urls)/(i + 1))*(x)
         print ('Running... time elapsed: ' + str(x) + '   Estimated time remaining: ' + str(y))
+
+        
+output = open("players.txt", 'w')
+
+for i in range len(all):
+    for j in range len(all[i]):
+        ouput.write(all[i][j] + "\n")
+    output.write("---------------------------------------")
