@@ -3,24 +3,31 @@ import requests
 from scipy import stats
 import pandas as pd
 import urllib.request
-import time
+import csv
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 
+
 urls = []
 for i in range(2007, 2019):
-    url = 'https://stats.nba.com/draft/history/?Season='+str(i)
+    url = 'https://www.basketball-reference.com/draft/NBA_'+str(i)+'.html'
     urls.append(url)
-print(urls[0])
-
+    
 ranking = [[],[]]
-for i in range(len(urls)):
-    player = []
-    url = urls[i]
+for url in urls:
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     table = soup.find('tbody')
-    rows = table.findAll('tr')
-    for j in rows:
-        name = j.find(class_ = 'player')
-        name1 = name.get_text()
+    row = table.findAll('tr')
+    for r in row:
+        player = []
+        items = r.findAll('td')
+        if len(items) > 2:
+            if items[0] and items[2]:
+                player.append(items[0].get_text())
+                player.append(items[2].get_text())
+                ranking.append(player)
+            
+with open("drafts.csv", "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(ranking)
