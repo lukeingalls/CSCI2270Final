@@ -1,5 +1,5 @@
-mess = open("test_clean_up.txt", "r")
-clean = open("cleaned_file", "w")
+mess = open("revised_players.txt", "r")
+clean = open("cleaned_file.txt", "w")
 
 delimiter_flag = True
 position_flag = False
@@ -22,7 +22,7 @@ for line in mess:
             position_flag = True
             x = l.split()
             clean.write(x[1] + ",")
-        elif (height_flag == False and "'" in l):
+        elif (height_flag == False and "\"" in l):
             x = l.split()
             height_flag = True
             clean.write(x[0] + ",")
