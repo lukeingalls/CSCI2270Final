@@ -27,6 +27,15 @@ std::string splitter(std::string &input, char delim = ',') {
 	}
 	return temp;
 }
+std::string remove_quotes(std::string s) {
+	std::string temp;
+	for (int i = 0; i < s.length(); i++) {
+		if (s[i] != 34) {
+			temp += s[i];
+		}
+	}
+	return temp;
+}
 
 /*
 These are the functions for the hashtable. This will store all the players for a particular year.
@@ -43,31 +52,37 @@ unsigned int table::hashFunction(std::string p) {
 	hashValue %= table_size;
 	return hashValue;
 }
-void table::addPlayer(player *p) {
-	unsigned int tindex = hashFunction(p->name);
-	if (searchPlayer(p->name, p->team)) {
-		htable[tindex].push_back(p);
-	}
+void table::addPlayer(player p) {
+	unsigned int tindex = hashFunction(p.name);
+	htable[tindex].push_back(p);
 }
-table::table() : table_size(750) {
-
+table::table() {
+	table_size = 750;
 }
 player *table::searchPlayer(std::string name, std::string team) {
 	unsigned int index = hashFunction(name);
-	for(int i = 0; i < htable[index].size(); i++) {
-		if (htable[index][i]->name == name && htable[index][i]->team == team) {
-			return htable[index][i];
+		for(int i = 0; i < htable[index].size(); i++) {
+			if (htable[index][i].name == name && htable[index][i].team == team) {
+				return &htable[index][i];
+		}
 	}
-}
 return 0;
 }
-
+player *table::searchPlayer(std::string name) {
+	unsigned int index = hashFunction(name);
+			for(int i = 0; i < htable[index].size(); i++) {
+				if (htable[index][i].name == name) {
+					return &htable[index][i];
+			}
+		}
+	return 0;
+}
 void table::printTable() {
 	for(int i = 0; i < 750; i++)
 		{
-			for(vector<player*>::iterator j = htable[i].begin(); j != htable[i].end(); j++)
+			for(int j = 0; j < htable[i].size(); j++)
 			{
-				cout<< (*j)->name << " ";
+				cout<< htable[i][j].name << " ";
 			}
 		cout<<endl;
 	}
@@ -81,16 +96,14 @@ player::player(std::string name, std::string team, std::string position, std::st
 	this->name = name;
 	this->team = team;
 	this->pos = position;
-	string f = splitter(height, 39);
-	splitter(f, 34);
-	string s = splitter(height, 34);
+	string s = remove_quotes(height);
+	string f = splitter(s, 39);
 	this->height = 12*(stoi(f)) + stoi(s);
 	this->years = years;
 	this->weight = weight;
 	for (int i = 0; i < 9; i++) {
 		game_avg[i] = stats[i];
 	}
-
 }
 player::player() {}
 
@@ -177,9 +190,9 @@ bool percentile_scoring::empty() {
 	return !players;
 }
 
-percentile_scoring::percentile_scoring() : year(750) {
+percentile_scoring::percentile_scoring() {
 	run = 0;
-	for (int i = 0; i < weights.size(); i++) {
+	for (int i = 0; i < sizeof(weights)/sizeof(weights[0]); i++) {
 		weights[i] = 1;
 	}
 	start_year = 2007;
@@ -194,7 +207,7 @@ void percentile_scoring::readinfile(std::string file)
 	if(roster.is_open()){
 		while(!roster.eof()){
 			getline(roster, line);
-			if(line == "") continue;
+			if(line.empty()) continue;
 			string name = splitter(line);
 			string position = splitter(line);
 			string height = splitter(line);
@@ -216,11 +229,172 @@ void percentile_scoring::readinfile(std::string file)
 			//8: fouls, 9: years played
 			float array[9] = {games, minutes, points, rebounds, assists, steals, blocks, turnovers, fouls};
 			//player::player(std::string name, std::string team, std::string position, std::string height, short int years, short int weight, float stats[])
-			player* person = new player(name, team, position, height, years, weight, array);
-			if(!year.searchPlayer(name, team))
+			if(!year.searchPlayer(name, team)) {
+				player person(name, team, position, height, years, weight, array);
+				players++;
 				year.addPlayer(person);
+			}
 		}
 	}
+	std::cout << "There are now " << players << " players in the table" << std::endl;
+}
+
+table percentile_scoring::rtable() {
+	return year;
+}
+
+void percentile_scoring::sort_basic_arrays() {
+	run = 1;
+	maxheap games(players, 0);
+	maxheap minutes(players, 1);
+	maxheap points(players, 2);
+	maxheap rebounds(players, 3);
+	maxheap assists(players, 4);
+	maxheap steals(players, 5);
+	maxheap blocks(players, 6);
+	maxheap turnovers(players, 7);
+	maxheap fouls(players, 8);
+	for (int j = 0; j < 750; j++) {
+		for (int i = 0; i < year.htable[j].size(); i++) {
+			games.push(&year.htable[j][i]);
+			minutes.push(&year.htable[j][i]);
+			points.push(&year.htable[j][i]);
+			rebounds.push(&year.htable[j][i]);
+			assists.push(&year.htable[j][i]);
+			steals.push(&year.htable[j][i]);
+			blocks.push(&year.htable[j][i]);
+			turnovers.push(&year.htable[j][i]);
+			fouls.push(&year.htable[j][i]);
+		}
+	}
+
+	for (int i = 0; i < players; i++) {
+		percent_scores[0].push_back(games.pop());
+		percent_scores[1].push_back(minutes.pop());
+		percent_scores[2].push_back(points.pop());
+		percent_scores[3].push_back(rebounds.pop());
+		percent_scores[4].push_back(assists.pop());
+		percent_scores[5].push_back(steals.pop());
+		percent_scores[6].push_back(blocks.pop());
+		percent_scores[7].push_back(turnovers.pop());
+		percent_scores[8].push_back(fouls.pop());
+	}
+}
+
+void percentile_scoring::percentile_score_players() {
+	if (!run) sort_basic_arrays();
+	for (int j = 0; j < 9; j++) {
+		for (int i = 0; i < players/* - 1*/; i++) {
+			// if (percent_scores[j][i]->game_avg[j] > percent_scores[j][i+1]->game_avg[j]) {
+				percent_scores[j][i]->relative_game_avg[j] = (float)(players - (i + 1))/(float)players;
+			// } else {
+				// int j = find_ith_equivalent(percent_scores[j], i, players - 1, j);
+				// for (int k  = 0; k < j; k++) percent_scores[j][i]->relative_game_avg[j] = (float)(players - (i + j + 1))/(float)players;
+				// i+=j;
+			// }
+		}
+	}
+}
+
+int percentile_scoring::find_ith_equivalent(std::vector<player*> p, int start, int remaining, int series) {
+	float start_val = p[start]->game_avg[series];
+	for (int i = 0; i < p.size(); i++) std::cout << p[i]->name << std::endl;
+	for (int i = start; i < remaining; i++) {
+		if (p[i]->game_avg[series] < start_val) {
+			return i;
+		}
+	}
+	return remaining;
+}
+
+//games, minutes, points, rebounds, assists, steals, blocks, turnovers, fouls
+
+void percentile_scoring::print_top_n_games(int n) {
+	std::cout << "Here are the " << n << " players who played the most: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[0][i]->name << percent_scores[0][i]->game_avg[0] << std::endl;
+}
+
+void percentile_scoring::print_top_n_minutes(int n) {
+	std::cout << "Here are the " << n << " players who averaged the most minutes per game: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[1][i]->name << percent_scores[1][i]->game_avg[1] << std::endl;
+}
+
+void percentile_scoring::print_top_n_points(int n) {
+	std::cout << "Here are the " << n << " best scorers: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[2][i]->name << percent_scores[2][i]->game_avg[2] << std::endl;
+}
+
+void percentile_scoring::print_top_n_rebounds(int n) {
+	std::cout << "Here are the " << n << " best rebounders: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[3][i]->name << percent_scores[3][i]->game_avg[3] << std::endl;
+}
+
+void percentile_scoring::print_top_n_assists(int n) {
+	std::cout << "Here are the " << n << " best assisters: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[4][i]->name << percent_scores[4][i]->game_avg[4] << std::endl;
+}
+
+void percentile_scoring::print_top_n_steals(int n) {
+	std::cout << "Here are the " << n << " best stealers: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[5][i]->name << percent_scores[5][i]->game_avg[5] << std::endl;
+}
+
+void percentile_scoring::print_top_n_blocks(int n) {
+	std::cout << "Here are the " << n << " best shot blockers: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[6][i]->name << percent_scores[6][i]->game_avg[6] << std::endl;
+}
+
+void percentile_scoring::print_top_n_turnovers(int n) {
+	std::cout << "Here are the " << n << " worst ball handlers: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[7][i]->name << percent_scores[7][i]->game_avg[7] << std::endl;
+}
+
+void percentile_scoring::print_top_n_fouls(int n) {
+	std::cout << "Here are the " << n << " players who commit the most fouls: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[8][i]->name << percent_scores[8][i]->game_avg[8] << std::endl;
+}
+
+void percentile_scoring::print_top_n_aggregate(int n) {
+	std::cout << "Here are YOUR top " << n << " players: " << std::endl;
+	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << percent_scores[9][i]->name << percent_scores[9][i]->game_avg[9] << std::endl;
+}
+
+void percentile_scoring::rank_top() {
+	percentile_score_players();
+	for (int i = 0; i < 750; i++) {
+		float sum = 0;
+		for (int j = 0; j < year.htable[i].size(); j++) {
+			for (int k = 0; k < 9; k++) {
+				sum += (year.htable[i][j].relative_game_avg[k] * weights[k]);
+			}
+			year.htable[i][j].game_avg[9] = sum;
+		}
+	}
+	maxheap aggregate(players, 9);
+	for (int j = 0; j < 750; j++) {
+		for (int i = 0; i < year.htable[j].size(); i++) {
+			aggregate.push(&year.htable[j][i]);
+		}
+	}
+
+	for (int i = 0; i < players; i++) {
+		percent_scores[9].push_back(aggregate.pop());
+	}
+}
+
+void percentile_scoring::update_ranks(float w1, float w2, float w3, float w4, float w5, float w6, float w7, float w8, float w9) {
+	weights[0] = w1;
+	weights[1] = w2;
+	weights[2] = w3;
+	weights[3] = w4;
+	weights[4] = w5;
+	weights[5] = w6;
+	weights[6] = w7;
+	weights[7] = w8;
+	weights[8] = w9;
+}
+
+void percentile_scoring::print_all_players() {
 	year.printTable();
 }
 
@@ -229,263 +403,3 @@ void percentile_scoring::readinfile(std::string file)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// int percentile_scoring::find_ith_equivalent(player **p, int remaining, char val) {
-// 	switch(val) {
-// 		case 'p': {
-// 				float start_val = (*p)->ppg;
-// 				for (int i = 0; i < remaining; i++) if ((*p + i)->ppg < start_val) return i;
-// 			}
-// 			break;
-// 		case 'r': {
-// 				float start_val = (*p)->rpg;
-// 				for (int i = 0; i < remaining; i++) if ((*p + i)->rpg < start_val) return i;
-// 			}
-// 			break;
-// 		case 'a': {
-// 				float start_val = (*p)->apg;
-// 				for (int i = 0; i < remaining; i++) if ((*p + i)->apg < start_val) return i;
-// 			}
-// 			break;
-// 		case 'b': {
-// 				float start_val = (*p)->bpg;
-// 				for (int i = 0; i < remaining; i++) if ((*p + i)->bpg < start_val) return i;
-// 			}
-// 			break;
-// 		case 's': {
-// 				float start_val = (*p)->spg;
-// 				for (int i = 0; i < remaining; i++) if ((*p + i)->spg < start_val) return i;
-// 			}
-// 			break;
-// 	}
-// 	return remaining;
-// }
-
-// void percentile_scoring::percentile_score_players() {
-// 	if (!run) sort_basic_arrays();
-// 	for (int i = 0; i < players - 1; i++) {
-// 		if (ppg[i]->ppg > ppg[i + 1]->ppg) {
-// 			ppg[i]->ppg_percentile = (float)(players - (i + 1))/(float)players;
-// 		} else {
-// 			int j = find_ith_equivalent(ppg + i, (players - 1) - i, 'p');
-// 			for (int k  = 0; k < j; k++) ppg[i + k]->ppg_percentile = (float)(players - (i + j + 1))/(float)players;
-// 			i+=j;
-// 		}
-// 	}
-// 	for (int i = 0; i < players - 1; i++) {
-// 		if (rpg[i]->rpg > rpg[i + 1]->rpg) {
-// 			rpg[i]->rpg_percentile = (float)(players - (i + 1))/(float)players;
-// 		} else {
-// 			int j = find_ith_equivalent(rpg + i, (players - 1) - i, 'r');
-// 			for (int k  = 0; k < j; k++) rpg[i + k]->rpg_percentile = (float)(players - (i + j + 1))/(float)players;
-// 			i+=j;
-// 		}
-// 	}
-// 	for (int i = 0; i < players - 1; i++) {
-// 		if (apg[i]->apg > apg[i + 1]->apg) {
-// 			apg[i]->apg_percentile = (float)(players - (i + 1))/(float)players;
-// 		} else {
-// 			int j = find_ith_equivalent(apg + i, (players - 1) - i, 'a');
-// 			for (int k  = 0; k < j; k++) apg[i + k]->apg_percentile = (float)(players - (i + j + 1))/(float)players;
-// 			i+=j;
-// 		}
-// 	}
-// 	for (int i = 0; i < players - 1; i++) {
-// 		if (spg[i]->spg > spg[i + 1]->spg) {
-// 			spg[i]->spg_percentile = (float)(players - (i + 1))/(float)players;
-// 		} else {
-// 			int j = find_ith_equivalent(spg + i, (players - 1) - i, 's');
-// 			for (int k  = 0; k < j; k++) spg[i + k]->spg_percentile = (float)(players - (i + j + 1))/(float)players;
-// 			i+=j;
-// 		}
-// 	}
-// 	for (int i = 0; i < players - 1; i++) {
-// 		if (bpg[i]->bpg > bpg[i + 1]->bpg) {
-// 			bpg[i]->bpg_percentile = (float)(players - (i + 1))/(float)players;
-// 		} else {
-// 			int j = find_ith_equivalent(bpg + i, (players - 1) - i, 'b');
-// 			for (int k  = 0; k < j; k++) bpg[i + k]->bpg_percentile = (float)(players - (i + j + 1))/(float)players;
-// 			i+=j;
-// 		}
-// 	}
-// }
-
-// void percentile_scoring::rank_top() {
-// 	percentile_score_players();
-// }
-
-
-// team *percentile_scoring::teamexists(std::string t) {
-// 	for (int i = 0; i < teams.size(); i++) if (teams[i].name == t) return &teams[i];
-// 	return 0;
-// }
-
-// void percentile_scoring::loadPlayer() {
-// 	std::string inputs[8];
-// 	team *t;
-// 	while (1) {
-// 		std::cout << "The teams currently in the system are:" << std::endl;
-// 		for (int i = 0; i < teams.size(); i++) std::cout << teams[i].name << std::endl;
-// 		std::cout << "What team does he play for?" << std::endl;
-// 		getline(std::cin, inputs[0]);
-// 		for (int i = 0; i < teams.size(); i++) {
-// 			if (teams[i].name == inputs[0]) {
-// 				t = &teams[i];
-// 				break;
-// 			}
-// 		}
-// 		std::cout << "Would you like to add this team? YES input 1. NO input 2." << std::endl;
-// 		getline(std::cin, inputs[1]);
-// 		if (inputs[1][0] == '1') {
-// 			teams.push_back(inputs[0]);
-// 			t = &teams[teams.size() - 1];
-// 			break;
-// 		}
-// 	}
-// 	std::cout << "Player name:" << std::endl;
-// 	getline(std::cin, inputs[1]);
-// 	while(1) {
-// 		std::cout << "PPG? ";
-// 		getline(std::cin, inputs[2]);
-// 		std::cout << std::endl;
-// 		if (is_num(inputs[2]))
-// 			break;
-// 		else
-// 			std::cout << "Input a float..." << std::endl;
-// 	}
-// 	while(1) {
-// 		std::cout << "RPG? ";
-// 		getline(std::cin, inputs[3]);
-// 		std::cout << std::endl;
-// 		if (is_num(inputs[3]))
-// 			break;
-// 		else
-// 			std::cout << "Input a float..." << std::endl;
-// 	}
-// 	while(1) {
-// 		std::cout << "APG? ";
-// 		getline(std::cin, inputs[4]);
-// 		std::cout << std::endl;
-// 		if (is_num(inputs[4]))
-// 			break;
-// 		else
-// 			std::cout << "Input a float..." << std::endl;
-// 	}
-// 	while(1) {
-// 		std::cout << "BPG? ";
-// 		getline(std::cin, inputs[5]);
-// 		std::cout << std::endl;
-// 		if (is_num(inputs[5]))
-// 			break;
-// 		else
-// 			std::cout << "Input a float..." << std::endl;
-// 	}
-// 	while(1) {
-// 		std::cout << "SPG? ";
-// 		getline(std::cin, inputs[6]);
-// 		std::cout << std::endl;
-// 		if (is_num(inputs[6]))
-// 			break;
-// 		else
-// 			std::cout << "Input a float..." << std::endl;
-// 	}
-// 	while (1) {
-// 		std::cout << "POS? ";
-// 		getline(std::cin, inputs[7]);
-// 		std::cout << std::endl;
-// 		if (inputs[7][0] == '1' || inputs[7][0] == '2' || inputs[7][0] == '3' || inputs[7][0] == '4' || inputs[7][0] == '5')
-// 			break;
-// 		else
-// 			std::cout << "Input an int..." << std::endl;
-// 	}
-// 	player p(inputs[1], stoi(inputs[7]), stof(inputs[2]), stof(inputs[3]), stof(inputs[4]), stof(inputs[5]), stof(inputs[6]));
-// 	t->roster.push_back(p);
-// 	players++;
-// 	run = 0;
-// }
-
-
-// void percentile_scoring::check_arrays() {
-// 	while(size < players) {
-// 		array_double(&ppg, size);
-// 		array_double(&rpg, size);
-// 		array_double(&apg, size);
-// 		array_double(&bpg, size);
-// 		array_double(&spg, size);
-// 		size = array_double(&cumulative, size);
-// 	}
-// }
-
-// void percentile_scoring::sort_basic_arrays() {
-
-// 	check_arrays();
-// 	run = 1;
-// 	maxheap points(players, 'p');
-// 	maxheap rebounds(players, 'r');
-// 	maxheap assists(players, 'a');
-// 	maxheap steals(players, 's');
-// 	maxheap blocks(players, 'b');
-// 	for (int j = 0; j < teams.size(); j++) {
-// 		for (int i = 0; i < teams[j].roster.size(); i++) {
-// 			points.push(&teams[j].roster[i]);
-// 			rebounds.push(&teams[j].roster[i]);
-// 			assists.push(&teams[j].roster[i]);
-// 			steals.push(&teams[j].roster[i]);
-// 			blocks.push(&teams[j].roster[i]);
-// 		}
-// 	}
-
-// 	for (int i = 0; i < players; i++) {
-// 		ppg[i] = points.pop();
-// 		rpg[i] = rebounds.pop();
-// 		apg[i] = assists.pop();
-// 		bpg[i] = blocks.pop();
-// 		spg[i] = steals.pop();
-// 	}
-// }
-
-// void percentile_scoring::print_top_n_points(int n) {
-// 	std::cout << "Here are the " << n << " best scorers: " << std::endl;
-// 	for (int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << ppg[i]->name << ppg[i]->ppg << std::endl;
-// }
-
-// void percentile_scoring::print_top_n_assists(int n) {
-// 	std::cout << "Here are the " << n << " best assisters: " << std::endl;
-// 	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << apg[i]->name << apg[i]->apg << std::endl;
-// }
-
-// void percentile_scoring::print_top_n_rebounds(int n) {
-// 	std::cout << "Here are the " << n << " best rebounders: " << std::endl;
-// 	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << rpg[i]->name << rpg[i]->rpg << std::endl;
-// }
-
-// void percentile_scoring::print_top_n_steals(int n) {
-// 	std::cout << "Here are the " << n << " best sttealers: " << std::endl;
-// 	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << spg[i]->name << spg[i]->spg << std::endl;
-// }
-
-// void percentile_scoring::print_top_n_blocks(int n) {
-// 	std::cout << "Here are the " << n << " best shot blockers: " << std::endl;
-// 	for(int i = 0; i < n && i < players; i++) std::cout << std::right << std::setw(4) << i + 1 << ": " << std::left << std::setw(30) << bpg[i]->name << bpg[i]->bpg << std::endl;
-// }
-
-// void percentile_scoring::print_all_players() {
-// 	for (int j = 0; j < teams.size(); j++) {
-// 		for (int i = 0; i < teams[j].roster.size(); i++) {
-// 			std::cout << i + 1 << ": " << std::left << std::setw(30) << teams[j].roster[i].name << teams[j].roster[i].ppg << std::endl;
-// 		}
-// 	}
-// }
