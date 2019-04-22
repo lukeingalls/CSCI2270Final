@@ -8,6 +8,9 @@ int main() {
 	ps.print_top_n_points(10);
 	ps.rank_top();
 	ps.print_top_n_aggregate(60);
+	ps.read_draft_file("drafts.csv");
+	ps.write_to_final_csv();
+	// ps.print_all_players();
 	// ps.rtable().printTable(); //This is how to print all players
 }
 
