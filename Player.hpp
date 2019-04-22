@@ -10,7 +10,6 @@ struct player {
 	short int years;
 	short int height;
 	short int weight;
-	short int games_played;
 	float game_avg[10];
 	//0: games per year, 1: minutes, 2: points, 3: rebounds,
 	//4: assists, 5: steals, 6: blocks, 7: turnovers
@@ -92,4 +91,6 @@ class percentile_scoring {
 		void print_top_n_fouls(int);
 		void print_top_n_turnovers(int);
 		void print_top_n_aggregate(int);
+		bool read_draft_file(std::string);
+		void write_to_final_csv();
 };
