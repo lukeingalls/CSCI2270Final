@@ -36,6 +36,15 @@ std::string remove_quotes(std::string s) {
 	}
 	return temp;
 }
+void cleaner(std::string &s) {
+	std::string temp;
+	for (int i = 0; i < s.length(); i++) {
+		if (s[i] != 13 && s[i] != 10) {
+			temp +=s[i];
+		}
+	}
+	s = temp;
+}
 
 /*
 These are the functions for the hashtable. This will store all the players for a particular year.
@@ -101,6 +110,7 @@ player::player(std::string name, std::string team, std::string position, std::st
 	this->height = 12*(stoi(f)) + stoi(s);
 	this->years = years;
 	this->weight = weight;
+	this->draft_flag = 0;
 	for (int i = 0; i < 9; i++) {
 		game_avg[i] = stats[i];
 	}
@@ -398,7 +408,48 @@ void percentile_scoring::print_all_players() {
 	year.printTable();
 }
 
+bool percentile_scoring::read_draft_file(std::string file) {
+	std::ifstream draft_data;
+	draft_data.open(file);
+	std::string line;
+	int counter = 0;
+	if (draft_data.is_open()) {
+		while (getline(draft_data, line)) {
+			if (line.empty()) continue;
+			cleaner(line);
+			player *p = year.searchPlayer(line);
+			if (p) {
+				// std::cout << p->name << " found!" << std::endl;
+				p->draft_flag = 1;
+				counter++;
+			} else {
+				// std::cout << line << " not found :(" << std::endl;
+			}
+		}
+	} else {
+		std::cout << "Draft data failed to open" << std::endl;
+		return 0;
+	}
+	std::cout << "Marked " << counter << " players" << std::endl;
+	draft_data.close();
+	return 1;
+}
 
+void percentile_scoring::write_to_final_csv() {
+	std::ofstream write_out;
+	write_out.open("output.csv");
+	write_out << "Name,Position,Years,Height,Weight,Games,Minutes,Points,Rebounds,Assists,Steals,Blocks,Turnovers,Fouls,Draft Status" << std::endl;
+	for (int i = 0; i < 750; i++) {
+		for (int j = 0; j < year.htable[i].size(); j++) {
+			write_out << year.htable[i][j].name << "," << year.htable[i][j].pos << "," << year.htable[i][j].years << "," << year.htable[i][j].height << ","
+			<< year.htable[i][j].weight << "," << year.htable[i][j].game_avg[0] << "," << year.htable[i][j].game_avg[1] << "," << year.htable[i][j].game_avg[2] << ","
+			<< year.htable[i][j].game_avg[3] << "," << year.htable[i][j].game_avg[4] << "," << year.htable[i][j].game_avg[5] << "," << year.htable[i][j].game_avg[6] << ","
+			<< year.htable[i][j].game_avg[7] << "," << year.htable[i][j].game_avg[8] << "," << year.htable[i][j].draft_flag << std::endl;
+		}
+	}
+
+	write_out.close();
+}
 
 
 
